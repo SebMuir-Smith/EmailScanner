@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using EmailScanner;
 using MimeKit;
 
 namespace EmailScanner
@@ -13,7 +12,7 @@ namespace EmailScanner
             EmailInfo settings = new EmailInfo(args);
 
             List<MimeMessage> emails = settings.GetNewEmails();
-            
+
             Console.WriteLine("Hello World!");
         }
     }
