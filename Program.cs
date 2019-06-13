@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Net.Mail;
+using MailKit.Net.Imap;
+using EmailScanner;
 
 namespace EmailScanner
 {
@@ -7,6 +8,7 @@ namespace EmailScanner
     {
         static void Main(string[] args)
         {
+            EmailInfo settings = new EmailInfo(args);
             Console.WriteLine("Hello World!");
         }
     }
