@@ -18,7 +18,7 @@ namespace EmailScanner {
         private SearchQuery errorSearchTerm;
 
         // Simple query used to search for retrospect successful backups
-        private SearchQuery safeSearchTerm;
+        private SearchQuery successfulSearchTerm;
 
         /// <summary>
         /// Constructor for email info object
@@ -34,9 +34,9 @@ namespace EmailScanner {
 
             port = int.Parse(args[3]);
 
-            errorSearchTerm = QueryManipulation.GetSearchQuery("errors.txt", true);
+            errorSearchTerm = SearchQuery.FromContains("NewDesktop Retrospect NAS drives");
 
-            safeSearchTerm = SearchQuery.FromContains("NewDesktop Retrospect NAS");
+            successfulSearchTerm = QueryManipulation.GetSearchQuery("success.txt", true);
 
         }
 
@@ -67,10 +67,16 @@ namespace EmailScanner {
             return inbox;
         }
 
-        public IMailFolder GetErrors(IMailFolder emails, IList<UniqueId> newMessageIds, out IList<UniqueId> messageIds){
+        public IList<UniqueId> GetSuccessful(IMailFolder emails, IList<UniqueId> newMessageIds){
 
-            messageIds = emails.Search(newMessageIds,this.errorSearchTerm);
-            return emails;
+            IList<UniqueId> messageIds = emails.Search(newMessageIds,this.successfulSearchTerm);
+            return messageIds;
+        }
+
+        public IList<UniqueId> GetFailure(IMailFolder emails, IList<UniqueId> newMessageIds){
+
+            IList<UniqueId> messageIds = emails.Search(newMessageIds,this.errorSearchTerm);
+            return messageIds;
         }
 
     }

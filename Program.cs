@@ -16,11 +16,19 @@ namespace EmailScanner
             IList<UniqueId> newEmailIds;
             IMailFolder emails = settings.GetNewEmails(out newEmailIds);
 
-            // Extract Retrospect error messages and update indices
-            IList<UniqueId> errorEmailIds;
-            IMailFolder errors = settings.GetErrors(emails, newEmailIds, out errorEmailIds);
+            // Extract Retrospect non-error messages and update indices        
+            IList<UniqueId> successfulEmailIds = settings.GetSuccessful(emails, newEmailIds);
 
-            IEnumerable<UniqueId> output = newEmailIds.Union(errorEmailIds);
+            // Get Ids of everything that is not an successful retrospect email
+            IList<UniqueId> errorOrUniqueIds = newEmailIds.Except(successfulEmailIds).ToList<UniqueId>();
+
+            // Get Ids of every retrospect error message
+            IList<UniqueId> errorIds = settings.GetFailure(emails, errorOrUniqueIds);
+
+            // Get Ids of everything that is not a retrospect email
+            IList<UniqueId> uniqueIds = errorOrUniqueIds.Except(errorIds).ToList<UniqueId>();
+
+
             Console.WriteLine("Hello World!");
         }
     }
