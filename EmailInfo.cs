@@ -5,6 +5,7 @@ using MailKit.Search;
 using MimeKit;
 namespace EmailScanner {
     public class EmailInfo {
+        // Email connection parameters set via command line
         public string userName;
 
         public string password;
@@ -13,7 +14,11 @@ namespace EmailScanner {
 
         public int port;
 
+        // Query used to search for errors, mainly found from errors.txt file
         private SearchQuery errorSearchTerm;
+
+        // Simple query used to search for retrospect successful backups
+        private SearchQuery safeSearchTerm;
 
         /// <summary>
         /// Constructor for email info object
@@ -29,36 +34,43 @@ namespace EmailScanner {
 
             port = int.Parse(args[3]);
 
-            errorSearchTerm = QueryManipulation.GetSearchQuery("errors.txt");
+            errorSearchTerm = QueryManipulation.GetSearchQuery("errors.txt", true);
+
+            safeSearchTerm = SearchQuery.FromContains("NewDesktop Retrospect NAS");
 
         }
 
         /// <summary>e
         /// Returns a list of emails recieved in the last 6 hours 
         /// </summary>
-        public List<MimeMessage> GetNewEmails() {
+        public IMailFolder GetNewEmails(out IList<UniqueId> messageIds) {
 
-            List<MimeMessage> emailsOutput;
+            IMailFolder inbox;
 
-            using(ImapClient connection = new ImapClient()) {
+                ImapClient connection = new ImapClient();
 
                 // Connect to server
                 connection.Connect(this.serverName, this.port);
 
                 connection.Authenticate(this.userName, this.password);
 
-                IMailFolder inbox = connection.Inbox;
+                inbox = connection.Inbox;
 
                 inbox.Open(FolderAccess.ReadOnly);
 
                 int sixHours = 6 * 60 * 60;
 
-                IList<UniqueId> messageIds = inbox.Search(SearchQuery.YoungerThan(sixHours));
+                messageIds = inbox.Search(SearchQuery.YoungerThan(sixHours));
 
-                emailsOutput = QueryManipulation.ExtractMessages(inbox,messageIds);
-            }
+            
 
-            return emailsOutput;
+            return inbox;
+        }
+
+        public IMailFolder GetErrors(IMailFolder emails, IList<UniqueId> newMessageIds, out IList<UniqueId> messageIds){
+
+            messageIds = emails.Search(newMessageIds,this.errorSearchTerm);
+            return emails;
         }
 
     }

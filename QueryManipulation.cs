@@ -11,8 +11,9 @@ namespace EmailScanner {
         /// derived from each line of the input text file
         /// </summary>
         /// <param name="fileName">The relative path of the desired text file</param>
+        /// <param name="retrospect">Boolean indicating if query needs (and contains retrospect) appended</param>
         /// <returns></returns>
-        public static SearchQuery GetSearchQuery(string fileName) {
+        public static SearchQuery GetSearchQuery(string fileName, bool retrospect) {
             string[] queries = File.ReadAllLines(fileName);
 
             SearchQuery search = SearchQuery.BodyContains(queries[0]);
@@ -20,6 +21,9 @@ namespace EmailScanner {
             for (int i = 1; i < queries.Length; i++) {
                 search = search.Or(SearchQuery.BodyContains(queries[i]));
             }
+
+            // Add a check for the sendee being the retrospect client if retrospect = true
+            search = retrospect ? search.And(SearchQuery.FromContains("NewDesktop Retrospect NAS")) : search;
 
             return search;
         }
