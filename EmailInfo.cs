@@ -60,8 +60,8 @@ namespace EmailScanner {
 
             int sixHours = 6 * 60 * 60;
 
-            // Get emails from the last 6 hours
-            messageIds = inbox.Search(SearchQuery.YoungerThan(sixHours));
+            // Get emails from the last 6 hours that haven't been marked as seen
+            messageIds = inbox.Search(SearchQuery.YoungerThan(sixHours).And(SearchQuery.NotSeen));
 
             // Mark the emails as seen
             inbox.AddFlags(messageIds, MessageFlags.Seen, true);

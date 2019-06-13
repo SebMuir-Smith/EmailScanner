@@ -16,6 +16,12 @@ namespace EmailScanner
             IList<UniqueId> newEmailIds;
             IMailFolder emails = settings.GetNewEmails(out newEmailIds);
 
+            // Exit program if no new emails were found
+            if(newEmailIds.Count == 0){
+                Console.WriteLine("No new emails!");
+                return;
+            }
+
             // Extract Retrospect non-error messages and update indices        
             IList<UniqueId> successfulEmailIds = settings.GetSuccessful(emails, newEmailIds);
 
@@ -31,7 +37,8 @@ namespace EmailScanner
             // Notify admin of all unique and error emails
             EmailSender sender = new EmailSender(args);
             sender.SendEmails(QueryManipulation.ExtractMessages(emails, errorIds),
-                              QueryManipulation.ExtractMessages(emails, uniqueIds));
+                              QueryManipulation.ExtractMessages(emails, uniqueIds),
+                              successfulEmailIds.Count);
             
             // Close inbox
             emails.Close();
