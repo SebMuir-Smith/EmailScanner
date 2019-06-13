@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using MailKit;
 
-namespace EmailScanner
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
+namespace EmailScanner {
+    class Program {
+        static void Main(string[] args) {
             // Load command line and text file info about connection + keywords
             EmailInfo settings = new EmailInfo(args);
 
@@ -17,7 +14,7 @@ namespace EmailScanner
             IMailFolder emails = settings.GetNewEmails(out newEmailIds);
 
             // Exit program if no new emails were found
-            if(newEmailIds.Count == 0){
+            if (newEmailIds.Count == 0) {
                 Console.WriteLine("No new emails!");
                 return;
             }
@@ -37,9 +34,9 @@ namespace EmailScanner
             // Notify admin of all unique and error emails
             EmailSender sender = new EmailSender(args);
             sender.SendEmails(QueryManipulation.ExtractMessages(emails, errorIds),
-                              QueryManipulation.ExtractMessages(emails, uniqueIds),
-                              successfulEmailIds.Count);
-            
+                QueryManipulation.ExtractMessages(emails, uniqueIds),
+                successfulEmailIds.Count);
+
             // Close inbox
             emails.Close();
 
