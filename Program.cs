@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using EmailScanner;
+using MimeKit;
 
 namespace EmailScanner
 {
@@ -11,7 +12,8 @@ namespace EmailScanner
             // Load command line info about connection
             EmailInfo settings = new EmailInfo(args);
 
-            List<dynamic> emails = settings.GetEmails();
+            List<MimeMessage> emails = settings.GetNewEmails();
+            
             Console.WriteLine("Hello World!");
         }
     }
