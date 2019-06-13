@@ -53,7 +53,7 @@ namespace EmailScanner {
 
                 inbox.Open(FolderAccess.ReadOnly);
 
-                int sixHours = 6 * 6 * 60;
+                int sixHours = 6 * 60 * 60;
 
                 IList<UniqueId> messageIds = inbox.Search(SearchQuery.YoungerThan(sixHours));
 
