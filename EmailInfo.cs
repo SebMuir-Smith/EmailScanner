@@ -40,42 +40,44 @@ namespace EmailScanner {
 
         }
 
-        /// <summary>e
+        /// <summary>
         /// Returns a list of emails recieved in the last 6 hours 
         /// </summary>
         public IMailFolder GetNewEmails(out IList<UniqueId> messageIds) {
 
             IMailFolder inbox;
 
-                ImapClient connection = new ImapClient();
+            ImapClient connection = new ImapClient();
 
-                // Connect to server
-                connection.Connect(this.serverName, this.port);
+            // Connect to server
+            connection.Connect(this.serverName, this.port);
 
-                connection.Authenticate(this.userName, this.password);
+            connection.Authenticate(this.userName, this.password);
 
-                inbox = connection.Inbox;
+            inbox = connection.Inbox;
 
-                inbox.Open(FolderAccess.ReadOnly);
+            inbox.Open(FolderAccess.ReadWrite);
 
-                int sixHours = 6 * 60 * 60;
+            int sixHours = 6 * 60 * 60;
 
-                messageIds = inbox.Search(SearchQuery.YoungerThan(sixHours));
+            // Get emails from the last 6 hours
+            messageIds = inbox.Search(SearchQuery.YoungerThan(sixHours));
 
-            
+            // Mark the emails as seen
+            inbox.AddFlags(messageIds, MessageFlags.Seen, true);
 
             return inbox;
         }
 
-        public IList<UniqueId> GetSuccessful(IMailFolder emails, IList<UniqueId> newMessageIds){
+        public IList<UniqueId> GetSuccessful(IMailFolder emails, IList<UniqueId> newMessageIds) {
 
-            IList<UniqueId> messageIds = emails.Search(newMessageIds,this.successfulSearchTerm);
+            IList<UniqueId> messageIds = emails.Search(newMessageIds, this.successfulSearchTerm);
             return messageIds;
         }
 
-        public IList<UniqueId> GetFailure(IMailFolder emails, IList<UniqueId> newMessageIds){
+        public IList<UniqueId> GetFailure(IMailFolder emails, IList<UniqueId> newMessageIds) {
 
-            IList<UniqueId> messageIds = emails.Search(newMessageIds,this.errorSearchTerm);
+            IList<UniqueId> messageIds = emails.Search(newMessageIds, this.errorSearchTerm);
             return messageIds;
         }
 

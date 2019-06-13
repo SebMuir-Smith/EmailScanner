@@ -28,6 +28,13 @@ namespace EmailScanner
             // Get Ids of everything that is not a retrospect email
             IList<UniqueId> uniqueIds = errorOrUniqueIds.Except(errorIds).ToList<UniqueId>();
 
+            // Notify admin of all unique and error emails
+            EmailSender sender = new EmailSender(args);
+            sender.SendEmails(QueryManipulation.ExtractMessages(emails, errorIds),
+                              QueryManipulation.ExtractMessages(emails, uniqueIds));
+            
+            // Close inbox
+            emails.Close();
 
             Console.WriteLine("Hello World!");
         }
