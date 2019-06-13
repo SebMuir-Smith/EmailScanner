@@ -1,5 +1,5 @@
 ﻿using System;
-using MailKit.Net.Imap;
+using System.Collections.Generic;
 using EmailScanner;
 
 namespace EmailScanner
@@ -8,7 +8,10 @@ namespace EmailScanner
     {
         static void Main(string[] args)
         {
+            // Load command line info about connection
             EmailInfo settings = new EmailInfo(args);
+
+            List<dynamic> emails = settings.GetEmails();
             Console.WriteLine("Hello World!");
         }
     }

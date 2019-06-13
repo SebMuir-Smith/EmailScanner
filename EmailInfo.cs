@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using MailKit.Net.Imap;
+using MimeKit;
 namespace EmailScanner
 {
     public class EmailInfo
@@ -8,7 +11,7 @@ namespace EmailScanner
 
         public string serverName;
 
-        public string port;
+        public int port;
 
 
         /// <summary>
@@ -23,8 +26,25 @@ namespace EmailScanner
 
             serverName = args[2];
 
-            port = args[3];
+            port = int.Parse(args[3]);
 
+        }
+        /// <summary>
+        /// Returns a list of Emails using given info
+        /// </summary>
+        public List<dynamic> GetEmails(){
+
+            using (ImapClient connection = new ImapClient()){
+
+                connection.Connect(this.serverName,this.port);
+
+                connection.Authenticate(this.userName, this.password);
+
+
+
+            }
+            
+            return new List<dynamic>();
         }
 
 
