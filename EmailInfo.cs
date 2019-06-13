@@ -1,9 +1,15 @@
 namespace EmailScanner
 {
-    public class EmailGetter
+    public class EmailInfo
     {
         public string userName;
         
         public string password;
+
+        public string serverName;
+
+        public string port;
+
+
     }
 }
