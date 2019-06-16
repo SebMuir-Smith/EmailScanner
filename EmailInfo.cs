@@ -14,10 +14,10 @@ namespace EmailScanner {
 
         public int port;
 
-        // Query used to search for errors, mainly found from errors.txt file
+        // Query used to search for errors
         private SearchQuery errorSearchTerm;
 
-        // Simple query used to search for retrospect successful backups
+        // Simple query used to search for retrospect successful backups, from success.txt file
         private SearchQuery successfulSearchTerm;
 
         /// <summary>
@@ -41,7 +41,9 @@ namespace EmailScanner {
         }
 
         /// <summary>
-        /// Returns a list of emails recieved in the last 6 hours 
+        /// Returns a MailFolder object containing the list of all emails.
+        /// Also returns messageIds, a list of indicies marking the emails that are unseen
+        /// and thus are to be searched.
         /// </summary>
         public IMailFolder GetNewEmails(out IList<UniqueId> messageIds) {
 
@@ -58,10 +60,8 @@ namespace EmailScanner {
 
             inbox.Open(FolderAccess.ReadWrite);
 
-            int sixHours = 6 * 60 * 60;
-
-            // Get emails from the last 6 hours that haven't been marked as seen
-            messageIds = inbox.Search(SearchQuery.YoungerThan(sixHours).And(SearchQuery.NotSeen));
+            // Get emails that haven't been marked as seen
+            messageIds = inbox.Search(SearchQuery.NotSeen);
 
             // Mark the emails as seen
             inbox.AddFlags(messageIds, MessageFlags.Seen, true);
@@ -69,15 +69,31 @@ namespace EmailScanner {
             return inbox;
         }
 
+        /// <summary>
+        /// Filters the current email inbox object to pull only the "non-error" retrospect emails
+        /// Returns a list of indicies that contain the indices that the non-error emails 
+        /// can be found at in the original email inbox object
+        /// </summary>
+        /// <param name="emails">Object containing all emails</param>
+        /// <param name="newMessageIds">List of indicies of unseen emails</param>
+        /// <returns></returns>
         public IList<UniqueId> GetSuccessful(IMailFolder emails, IList<UniqueId> newMessageIds) {
-
+            // First argument means only search new emails
             IList<UniqueId> messageIds = emails.Search(newMessageIds, this.successfulSearchTerm);
             return messageIds;
         }
 
-        public IList<UniqueId> GetFailure(IMailFolder emails, IList<UniqueId> newMessageIds) {
-
-            IList<UniqueId> messageIds = emails.Search(newMessageIds, this.errorSearchTerm);
+        /// <summary>
+        /// Filters the current email inbox object to pull only the "error" emails
+        /// Returns a list of indicies that contain the indices that the error emails 
+        /// can be found at in the original email inbox object
+        /// </summary>
+        /// <param name="emails">Object containing all emails</param>
+        /// <param name="newMessageIds">List of indicies of unseen emails that are not successful retrospect emails</param>
+        /// <returns></returns>
+        public IList<UniqueId> GetFailure(IMailFolder emails, IList<UniqueId> nonSuccessfulIds) {
+            // First argument means only search for error/unique emails
+            IList<UniqueId> messageIds = emails.Search(nonSuccessfulIds, this.errorSearchTerm);
             return messageIds;
         }
 

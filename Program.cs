@@ -9,7 +9,7 @@ namespace EmailScanner {
             // Load command line and text file info about connection + keywords
             EmailInfo settings = new EmailInfo(args);
 
-            // Pull emails and email indicides from last 6 hours
+            // Pull emails and email indicides for all unread emails
             IList<UniqueId> newEmailIds;
             IMailFolder emails = settings.GetNewEmails(out newEmailIds);
 
@@ -31,7 +31,7 @@ namespace EmailScanner {
             // Get Ids of everything that is not a retrospect email
             IList<UniqueId> uniqueIds = errorOrUniqueIds.Except(errorIds).ToList<UniqueId>();
 
-            // Notify admin of all unique and error emails
+            // Notify admin of all unique and error emails, using supplied outgoing server info
             EmailSender sender = new EmailSender(args);
             sender.SendEmails(QueryManipulation.ExtractMessages(emails, errorIds),
                 QueryManipulation.ExtractMessages(emails, uniqueIds),
@@ -39,8 +39,6 @@ namespace EmailScanner {
 
             // Close inbox
             emails.Close();
-
-            Console.WriteLine("Hello World!");
         }
     }
 }

@@ -6,8 +6,10 @@ using MimeKit;
 
 namespace EmailScanner {
     public class EmailSender : EmailInfo {
+        // Who the emails are to be addressed to
         public string adminName = "Sebastian";
 
+        // Outgoing info from command line
         public int outgoingPort;
 
         public string recipient;
@@ -20,6 +22,14 @@ namespace EmailScanner {
 
         }
 
+        /// <summary>
+        /// When given error emails and the numberSuccessful summary statistic, emails out reports
+        /// to the specified email on errors and unique (non-retrospect) emails 
+        /// </summary>
+        /// <param name="errorEmails">List of emails of retrospect error emails</param>
+        /// <param name="uniqueEmails">List of emails of anything that isn't from retrospect</param>
+        /// <param name="numberSuccessful">How many successful emails that were identified in pre-processing</param>
+        /// <returns></returns>
         public bool SendEmails(List<MimeMessage> errorEmails, List<MimeMessage> uniqueEmails,
             int numberSuccessful) {
 

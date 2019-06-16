@@ -16,8 +16,10 @@ namespace EmailScanner {
         public static SearchQuery GetSearchQuery(string fileName, bool retrospect) {
             string[] queries = File.ReadAllLines(fileName);
 
+            // Get first search term
             SearchQuery search = SearchQuery.BodyContains(queries[0]);
 
+            // Get consecutive search terms and concatenate them into a large or statement
             for (int i = 1; i < queries.Length; i++) {
                 search = search.Or(SearchQuery.BodyContains(queries[i]));
             }
@@ -27,8 +29,9 @@ namespace EmailScanner {
 
             return search;
         }
+
         /// <summary>
-        /// Uses the given indices to extract messages for provided inbox
+        /// Uses the given indices to extract messages from provided inbox, returning a list of messages
         /// </summary>
         /// <param name="emails">Mail folder of emails</param>
         /// <param name="ids">List of unique ids of emails to be extracted</param>
