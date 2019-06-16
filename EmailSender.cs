@@ -29,12 +29,12 @@ namespace EmailScanner {
         /// <param name="errorEmails">List of emails of retrospect error emails</param>
         /// <param name="uniqueEmails">List of emails of anything that isn't from retrospect</param>
         /// <param name="numberSuccessful">How many successful emails that were identified in pre-processing</param>
-        /// <returns></returns>
-        public bool SendEmails(List<MimeMessage> errorEmails, List<MimeMessage> uniqueEmails,
+        public void SendEmails(List<MimeMessage> errorEmails, List<MimeMessage> uniqueEmails,
             int numberSuccessful) {
 
             // Count the number of successful emails if no errors
             if (errorEmails.Count == 0) {
+                // Get old error count, increment it then record it
                 int numberSuccessfulPrev = int.Parse(new StreamReader("nSuccessful.txt").ReadLine());
 
                 numberSuccessful = numberSuccessfulPrev + numberSuccessful;
@@ -43,63 +43,78 @@ namespace EmailScanner {
                 s.WriteLine(numberSuccessful);
                 s.Close();
             } else {
+                // Reset textfile error counter to 0 if there was errors
                 StreamWriter s = new StreamWriter("nSuccessful.txt", false);
                 s.WriteLine(0);
                 s.Close();
             }
 
-            // Calculate useful statistics to be added to bottom of email
-            TextPart footer = new TextPart("Plain") {
-                Text = string.Format("\n--------------------------------------------------------" +
-                "\nThis email was automatically forwarded by a script.\n" +
+            // Calculate useful statistics to be added to top of email
+            TextPart header = new TextPart("Plain") {
+                Text = string.Format(
+                "This email was automatically forwarded by a script.\n" +
                 "Statistics:\n\tTotal unread errors: {0}\n\tTotal unread unique emails: {1}\n\t" +
-                "DateTime script was run: {2}\n\tNumber of consecutive successful backups: {3}",
+                "DateTime script was run: {2}\n\tNumber of consecutive successful backups: {3}\n" +
+                "Begin message content:\n",
                 errorEmails.Count, uniqueEmails.Count, DateTime.Now, numberSuccessful)
             };
 
-            Multipart bodyContent;
-
-            SmtpClient connection = new SmtpClient();
+            // Create container for email content
+            Multipart bodyContent = new Multipart("mixed");
+            bodyContent.Add(header);
 
             // Connect to server
+            SmtpClient connection = new SmtpClient();
             connection.Connect(this.serverName, this.outgoingPort);
-
             connection.Authenticate(this.userName, this.password);
 
-            MimeMessage outgoingMessage;
-            foreach (MimeMessage error in errorEmails) {
-                outgoingMessage = new MimeMessage();
+            // Add content to and send first, error message
+            MimeMessage outgoingMessage = new MimeMessage();
 
-                outgoingMessage.From.Add(new MailboxAddress("Email Checker", this.userName));
-                outgoingMessage.To.Add(new MailboxAddress(adminName, this.recipient));
+            outgoingMessage.From.Add(new MailboxAddress("Email Checker", this.userName));
+            outgoingMessage.To.Add(new MailboxAddress(adminName, this.recipient));
 
-                outgoingMessage.Subject = string.Format("{0}, there is an error in the backup.", adminName);
+            outgoingMessage.Subject = string.Format("{0}, there is an error in the backup.", adminName);
 
-                bodyContent = new Multipart("mixed");
+            bodyContent = new Multipart("mixed");
+            bodyContent.Add(header);
+
+            foreach(MimeMessage error in errorEmails){
+                // Add some spacing between header and also between emails
+                bodyContent.Add(new TextPart("Plain"){Text = "\n----------------------------\n\n"});
+                // Add content of error message to email
                 bodyContent.Add(error.Body);
-                bodyContent.Add(footer);
-                outgoingMessage.Body = bodyContent;
+            }
 
+            // Add constructed email body to email and send it, if there was errors
+            outgoingMessage.Body = bodyContent;
+            if (errorEmails.Count > 0){
                 connection.Send(outgoingMessage);
             }
 
-            foreach (MimeMessage unique in uniqueEmails) {
-                outgoingMessage = new MimeMessage();
+            // Do the same thing for the unique emails
+            outgoingMessage = new MimeMessage();
 
-                outgoingMessage.From.Add(new MailboxAddress("Email Checker", this.userName));
-                outgoingMessage.To.Add(new MailboxAddress(adminName, this.recipient));
+            outgoingMessage.From.Add(new MailboxAddress("Email Checker", this.userName));
+            outgoingMessage.To.Add(new MailboxAddress(adminName, this.recipient));
 
-                outgoingMessage.Subject = string.Format("{0}, you have a new IT email.", adminName);
+            outgoingMessage.Subject = string.Format("{0}, you have new IT emails.", adminName);
 
-                bodyContent = new Multipart("mixed");
-                bodyContent.Add(unique.Body);
-                bodyContent.Add(footer);
-                outgoingMessage.Body = bodyContent;
+            bodyContent = new Multipart("mixed");
+            bodyContent.Add(header);
 
-                connection.Send(outgoingMessage);
+            foreach(MimeMessage unqiue in uniqueEmails){
+                // Add some spacing between header and also between emails
+                bodyContent.Add(new TextPart("Plain"){Text = "\n----------------------------\n\n"});
+                // Add content of unique message to email
+                bodyContent.Add(unqiue.Body);
             }
 
-            return true;
+            // Add constructed email body to email and send it, if there was errors
+            outgoingMessage.Body = bodyContent;
+            if (uniqueEmails.Count > 0){
+                connection.Send(outgoingMessage);
+            }
         }
 
     }
